@@ -1,2 +1,2 @@
-ChatLM-mini-Chinese/model.safetensors filter=lfs diff=lfs merge=lfs -text
 chatbot_model.pth filter=lfs diff=lfs merge=lfs -text
+ChatLM-mini-Chinese/model.safetensors filter=lfs diff=lfs merge=lfs -text
