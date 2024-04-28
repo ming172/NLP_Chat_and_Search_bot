@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .recent-chat-btn-container {
+            position: absolute;
+            bottom: 90%;
+            right: 20px;
+        }
+        .recent-chat-btn-container button {
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            padding: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .recent-chat-btn-container button:hover {
+            background-color: #45a049;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 800px;
+            border-radius: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+            overflow: hidden;
+            animation: slideIn 0.5s forwards;
+        }
+        .chat-header {
+            background-color: #4CAF50;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+            font-size: 24px;
+            border-bottom: 1px solid #ddd;
+        }
+        .chat-messages {
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            height: 70vh;
+        }
+        .chat-messages::-webkit-scrollbar {
+            width: 8px;
+        }
+        .chat-messages::-webkit-scrollbar-thumb {
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
+        .message {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            animation: fadeIn 0.5s forwards;
+        }
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #ddd;
+            margin-right: 10px;
+        }
+        .message-content {
+            padding: 10px;
+            border-radius: 10px;
+            background-color: #f5f5f5;
+            max-width: 70%;
+            word-wrap: break-word;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .message-content b {
+            font-weight: bold;
+        }
+        .chat-input {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            border-top: 1px solid #ddd;
+        }
+        .chat-input input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 20px;
+            outline: none;
+            margin-right: 10px;
+        }
+        .chat-input button {
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            padding: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .chat-input button:hover {
+            background-color: #45a049;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateY(-100%);
+            }
+            to {
+                transform: translateY(0);
+            }
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+    </style>
+</head>
+<body>
+<div class="chat-container">
+    <div class="chat-header">Chatbot</div>
+    <div class="chat-messages" id="chat-messages"></div>
+    <div class="chat-input">
+        <input type="text" id="message" name="message" placeholder="输入您的消息..." autocomplete="off" required>
+        <button id="send-btn"><i class="fas fa-paper-plane"></i></button>
+    </div>
+    <div class="recent-chat-btn-container">
+        <button id="recent-chat-btn">Recent Chat</button>
+    </div>
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+    $(document).ready(function(){
+        var lastMessage = ''; // 在外部定义变量用于存储上一条消息
+        // 发送消息到 /chat 路由
+        function sendMessageToChat() {
+            var message = $('#message').val();
+            if(message.trim() !== ''){
+                lastMessage = message; // 在发送之前存储消息
+                $('#chat-messages').append('<div class="message"><div class="message-avatar"></div><div class="message-content"><b>You:</b> ' + message + '</div></div>');
+                $('#message').val('');//清空
+                $.ajax({
+                    type: 'POST',
+                    url: '/chat',
+                    data: { message: message },
+                    success: function(response){
+                        $('#chat-messages').append('<div class="message"><div class="message-avatar"></div><div class="message-content"><b>Bot:</b> ' + response.response + '</div></div>');
+                        $('#chat-messages').scrollTop($('#chat-messages')[0].scrollHeight);
+                    }
+                });
+            }
+        }
+        // 发送消息到 /store_chat 路由
+        function sendMessageToStore() {
+
+            var message = lastMessage; // 使用存储的消息
+            if(message.trim() !== ''){
+                $.ajax({
+                    type: 'POST',
+                    url: '/store_chat',
+                    data: { message: message },
+                    success: function(response){
+                        console.log(response); // 打印服务器返回的信息到控制台
+                    }
+                });
+            }
+        }
+
+        $('#send-btn').on('click', function(){
+            sendMessageToChat();
+            sendMessageToStore(); // 在发送消息到 /chat 路由之后，再发送消息到 /store_chat 路由
+        });
+
+        $('#message').keypress(function(event){
+            var keycode = (event.keyCode ? event.keyCode : event.which);
+            if(keycode == '13'){
+                sendMessageToChat();
+                sendMessageToStore(); // 在发送消息到 /chat 路由之后，再发送消息到 /store_chat 路由
+            }
+        });
+        // $('.recent-chat-btn-container').append('<button id="recent-chat-btn">Recent Chat</button>');
+
+        $('#recent-chat-btn').on('click', function(){
+            window.location.href = "/recent_chat";
+        });
+
+    });
+</script>
+</body>
+</html>

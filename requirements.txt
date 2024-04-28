@@ -1,0 +1,7 @@
+Flask==1.1.2
+jieba==0.42.1
+redis==5.0.3
+SQLAlchemy==2.0.29
+SQLAlchemy==1.4.32
+torch==1.11.0
+transformers==4.36.0
